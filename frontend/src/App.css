@@ -174,22 +174,16 @@ body {
 
 .result-section {
   background: #f8f9fa;
-  padding: 30px;
+  padding: 40px;
   border-radius: 8px;
   border: 2px solid #e9ecef;
-}
-
-.results-rules-container {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 25px;
   margin-bottom: 30px;
 }
 
-@media (max-width: 1024px) {
-  .results-rules-container {
-    grid-template-columns: 1fr;
-  }
+.result-section h2 {
+  color: #2d3748;
+  margin-bottom: 30px;
+  font-size: 1.8rem;
 }
 
 .result-section h2 {
@@ -200,38 +194,45 @@ body {
 
 .word-card {
   background: white;
-  padding: 25px;
+  padding: 40px;
   border-radius: 8px;
   border: 2px solid #e9ecef;
   text-align: center;
+  min-height: 280px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 .word-display {
-  font-size: 3rem;
+  font-size: 4.5rem;
   font-weight: 700;
   color: #667eea;
-  margin-bottom: 15px;
-  letter-spacing: 3px;
+  margin-bottom: 25px;
+  letter-spacing: 4px;
 }
 
 .score-display {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 600;
   color: #764ba2;
-  margin-bottom: 20px;
+  margin-bottom: 30px;
 }
 
 .letters-used {
   text-align: left;
   background: #f8f9fa;
-  padding: 15px;
+  padding: 20px;
   border-radius: 6px;
+  margin-top: 10px;
 }
 
 .letters-used strong {
   display: block;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
   color: #2d3748;
+  font-size: 1rem;
 }
 
 .letter-list {
@@ -242,11 +243,12 @@ body {
 
 .letter-count {
   background: white;
-  padding: 6px 12px;
+  padding: 8px 16px;
   border-radius: 20px;
   border: 2px solid #e9ecef;
   font-weight: 600;
   color: #667eea;
+  font-size: 0.95rem;
 }
 
 .words-list {
@@ -300,6 +302,7 @@ body {
   padding: 25px;
   border-radius: 8px;
   border-left: 4px solid #667eea;
+  margin-bottom: 30px;
 }
 
 .info-section h3 {
@@ -351,7 +354,7 @@ body {
   }
 
   .word-display {
-    font-size: 2.2rem;
+    font-size: 3rem;
   }
 
   .score-display {

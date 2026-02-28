@@ -140,41 +140,39 @@ const App: React.FC = () => {
 
         {error && <div className="error-message">{error}</div>}
 
-        <div className="results-rules-container">
-          {bestWord && (
-            <section className="result-section">
-              <h2>Best Word Found</h2>
-              <div className="word-card">
-                <div className="word-display">{bestWord.word}</div>
-                <div className="score-display">Score: {bestWord.score}</div>
-                <div className="letters-used">
-                  <strong>Letters used:</strong>
-                  <div className="letter-list">
-                    {Object.entries(bestWord.usedLetters).map(
-                      ([letter, count]) => (
-                        <span key={letter} className="letter-count">
-                          {letter}
-                          {count > 1 && `×${count}`}
-                        </span>
-                      )
-                    )}
-                  </div>
+        {bestWord && (
+          <section className="result-section">
+            <h2>Best Word Found</h2>
+            <div className="word-card">
+              <div className="word-display">{bestWord.word}</div>
+              <div className="score-display">Score: {bestWord.score}</div>
+              <div className="letters-used">
+                <strong>Letters used:</strong>
+                <div className="letter-list">
+                  {Object.entries(bestWord.usedLetters).map(
+                    ([letter, count]) => (
+                      <span key={letter} className="letter-count">
+                        {letter}
+                        {count > 1 && `×${count}`}
+                      </span>
+                    )
+                  )}
                 </div>
               </div>
-            </section>
-          )}
-
-          <section className="info-section">
-            <h3>📚 Rules</h3>
-            <ul>
-              <li>Rack must contain 1-7 letters</li>
-              <li>Valid words are 2-15 letters long</li>
-              <li>Words must exist in the dictionary</li>
-              <li>Letter usage cannot exceed tile availability</li>
-              <li>Scoring is based on standard Scrabble values</li>
-            </ul>
+            </div>
           </section>
-        </div>
+        )}
+
+        <section className="info-section">
+          <h3>📚 Rules</h3>
+          <ul>
+            <li>Rack must contain 1-7 letters</li>
+            <li>Valid words are 2-15 letters long</li>
+            <li>Words must exist in the dictionary</li>
+            <li>Letter usage cannot exceed tile availability</li>
+            <li>Scoring is based on standard Scrabble values</li>
+          </ul>
+        </section>
       </main>
 
       <footer className="app-footer">
