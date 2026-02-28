@@ -1,0 +1,17 @@
+{
+  "name": "scrabble-word-builder",
+  "version": "1.0.0",
+  "description": "Scrabble Word Builder - Find the highest scoring valid words",
+  "private": true,
+  "scripts": {
+    "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
+    "start": "npm run start:backend & npm run start:frontend",
+    "start:backend": "cd backend && npm start",
+    "start:frontend": "cd frontend && npm start",
+    "build": "cd backend && npm run build && cd ../frontend && npm run build"
+  },
+  "workspaces": [
+    "backend",
+    "frontend"
+  ]
+}
