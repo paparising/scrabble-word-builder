@@ -1,4 +1,6 @@
 import { ScrabbleSolver } from '../scrabble-solver';
+import * as fs from 'fs';
+import * as os from 'os';
 import * as path from 'path';
 
 describe('ScrabbleSolver', () => {
@@ -120,6 +122,36 @@ describe('ScrabbleSolver', () => {
       // Valid: rack "ABC" + board "DEF" = all within limits
       const result = solver.findBestWord('ABC', 'DEF');
       expect(result).toBeDefined(); // Should not throw
+    });
+  });
+
+  describe('Tie-breaking rule', () => {
+    it('should return the alphabetically first word when multiple words have the same score', () => {
+      const tempDir = fs.mkdtempSync(path.join(os.tmpdir(), 'scrabble-tie-test-'));
+      const dictionaryPath = path.join(tempDir, 'dictionary.txt');
+      const letterDataPath = path.join(tempDir, 'letter_data.json');
+
+      fs.writeFileSync(dictionaryPath, 'ACT\nCAT\n', 'utf-8');
+      fs.writeFileSync(
+        letterDataPath,
+        JSON.stringify({
+          letters: {
+            A: { score: 1, tiles: 9 },
+            C: { score: 3, tiles: 2 },
+            T: { score: 1, tiles: 6 },
+          },
+        }),
+        'utf-8'
+      );
+
+      const tieSolver = new ScrabbleSolver(dictionaryPath, letterDataPath);
+      const result = tieSolver.findBestWord('CAT');
+
+      expect(result).not.toBeNull();
+      expect(result?.score).toBe(5);
+      expect(result?.word).toBe('ACT');
+
+      fs.rmSync(tempDir, { recursive: true, force: true });
     });
   });
 });

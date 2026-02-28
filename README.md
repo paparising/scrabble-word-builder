@@ -137,6 +137,21 @@ cd frontend
 npm run start
 ```
 
+## Stopping the Application
+
+From the project root, stop both services:
+
+```bash
+npm run stop
+```
+
+Stop individually if needed:
+
+```bash
+npm run stop:frontend
+npm run stop:backend
+```
+
 ## Usage
 
 1. **Open the Web App**

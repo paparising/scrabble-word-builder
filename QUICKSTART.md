@@ -34,6 +34,21 @@ Then open your browser:
 - 🌐 **Frontend**: http://localhost:3000
 - 🔌 **API Health Check**: http://localhost:5123/health
 
+### Stop Backend & Frontend
+
+From project root, run:
+
+```powershell
+npm run stop
+```
+
+Optional (stop individually):
+
+```powershell
+npm run stop:frontend
+npm run stop:backend
+```
+
 ## ✅ Test It's Working
 
 1. Open http://localhost:3000 in your browser
@@ -70,6 +85,7 @@ See [TEST_SUMMARY.md](TEST_SUMMARY.md) for details.
 | --------------------------- | ----------------------------------------------------- |
 | **"npm not found"**         | Install from https://nodejs.org/                      |
 | **"Port 3000/5123 in use"** | Close other apps using these ports                    |
+| **Need to stop both apps**  | Run `npm run stop` from project root                  |
 | **"Cannot find module"**    | Run `npm run install:all` again                       |
 | **Slow startup**            | First run downloads packages (normal, takes 5-10 min) |
 | **Tests fail**              | Run `cd backend && npm install && npm test`           |

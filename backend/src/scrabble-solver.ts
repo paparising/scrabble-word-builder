@@ -18,20 +18,36 @@ export class ScrabbleSolver {
   private dictionary: Set<string>;
   private letterData: LetterData;
 
+  /**
+   * Load file with error handling
+   */
+  private loadFile(filePath: string, description: string): string {
+    try {
+      return fs.readFileSync(filePath, 'utf-8');
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error(`✗ Failed to load ${description} from ${filePath}`);
+      console.error(`  Error: ${errorMsg}`);
+      throw new Error(`${description} initialization failed: ${errorMsg}`);
+    }
+  }
+
   constructor(dictionaryPath: string, letterDataPath: string) {
     // Load dictionary
-    const dictContent = fs.readFileSync(dictionaryPath, 'utf-8');
+    const dictContent = this.loadFile(dictionaryPath, 'Dictionary');
     this.dictionary = new Set(
       dictContent
         .split('\n')
         .map(word => word.trim().toUpperCase())
         .filter(word => word.length > 0)
     );
+    console.log(`✓ Dictionary loaded successfully from ${dictionaryPath} (${this.dictionary.size} words)`);
 
     // Load letter data
-    const letterContent = fs.readFileSync(letterDataPath, 'utf-8');
+    const letterContent = this.loadFile(letterDataPath, 'Letter data');
     const letterJson = JSON.parse(letterContent);
     this.letterData = letterJson.letters;
+    console.log(`✓ Letter data loaded successfully from ${letterDataPath}`);
   }
 
   /**
@@ -137,6 +153,36 @@ export class ScrabbleSolver {
   }
 
   /**
+   * Validate if a combination is a valid word
+   */
+  private isValidComboWord(
+    combo: string,
+    availableLetters: { [letter: string]: number }
+  ): boolean {
+    // Check if word exists in dictionary
+    if (!this.dictionary.has(combo)) {
+      return false;
+    }
+
+    // Check if word length is valid (2-15 letters)
+    if (combo.length < 2 || combo.length > 15) {
+      return false;
+    }
+
+    // Check if can form from combined available letters
+    if (!this.canFormWord(combo, availableLetters)) {
+      return false;
+    }
+
+    // Check tile limits (no letter exceeds max tiles in Scrabble)
+    if (!this.checkTileLimit(combo)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
    * Find the highest scoring valid word
    */
   public findBestWord(
@@ -158,36 +204,26 @@ export class ScrabbleSolver {
     const rackChars = rack.toUpperCase().split('');
     const boardChars = boardWord.toUpperCase().split('');
     const allLetters = rackChars.concat(boardChars);
+    
     const combinations = this.generateCombinations(allLetters.join(''), 2, 15);
 
     let bestWord: WordResult | null = null;
     let bestScore = 0;
 
     for (const combo of combinations) {
-      // Check if word exists in dictionary
-      if (!this.dictionary.has(combo)) {
-        continue;
-      }
-
-      // Check if word length is valid (2-15 letters)
-      if (combo.length < 2 || combo.length > 15) {
-        continue;
-      }
-
-      // Check if can form from combined available letters
-      if (!this.canFormWord(combo, availableLetters)) {
-        continue;
-      }
-
-      // Check tile limits (no letter exceeds max tiles in Scrabble)
-      if (!this.checkTileLimit(combo)) {
+      // Validate if combo is a valid word
+      if (!this.isValidComboWord(combo, availableLetters)) {
         continue;
       }
 
       // Calculate score
       const score = this.calculateScore(combo);
 
-      if (score > bestScore) {
+      if (
+        !bestWord ||
+        score > bestScore ||
+        (score === bestScore && combo.localeCompare(bestWord.word) < 0)
+      ) {
         bestScore = score;
         bestWord = {
           word: combo,

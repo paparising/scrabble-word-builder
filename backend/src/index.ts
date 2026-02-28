@@ -1,19 +1,23 @@
 import express, { Request, Response, NextFunction } from 'express';
 import * as path from 'path';
 import cors from 'cors';
+import dotenv from 'dotenv';
 import { ScrabbleSolver } from './scrabble-solver';
+
+// Load environment variables
+dotenv.config({ path: path.join(__dirname, '../.env') });
 
 const app = express();
 const PORT = process.env.PORT || 5123;
 
+// Initialize Scrabble Solver
+const dictionaryPath = path.join(__dirname, `../../${process.env.DICTIONARY_PATH || 'data/dictionary.txt'}`);
+const letterDataPath = path.join(__dirname, `../../${process.env.LETTER_DATA_PATH || 'data/letter_data.json'}`);
+let solver: ScrabbleSolver;
+
 // Middleware
 app.use(cors());
 app.use(express.json());
-
-// Initialize Scrabble Solver
-const dictionaryPath = path.join(__dirname, '../../data/dictionary.txt');
-const letterDataPath = path.join(__dirname, '../../data/letter_data.json');
-let solver: ScrabbleSolver;
 
 try {
   solver = new ScrabbleSolver(dictionaryPath, letterDataPath);

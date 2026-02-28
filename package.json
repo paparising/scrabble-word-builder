@@ -6,8 +6,11 @@
   "scripts": {
     "install:all": "npm install && cd backend && npm install && cd ../frontend && npm install",
     "start": "npm run start:backend & npm run start:frontend",
-    "start:backend": "cd backend && npm start",
+    "start:backend": "cd backend && npm run dev",
     "start:frontend": "cd frontend && npm start",
+    "stop": "npm run stop:frontend && npm run stop:backend",
+    "stop:frontend": "npx kill-port 3000",
+    "stop:backend": "npx kill-port 5123",
     "build": "cd backend && npm run build && cd ../frontend && npm run build"
   },
   "workspaces": [
