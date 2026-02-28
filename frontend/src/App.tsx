@@ -21,11 +21,8 @@ const App: React.FC = () => {
   const [rack, setRack] = useState<string>('');
   const [boardWord, setBoardWord] = useState<string>('');
   const [bestWord, setBestWord] = useState<WordResult | null>(null);
-  const [topWords, setTopWords] = useState<WordResult[]>([]);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string>('');
-  const [showTop, setShowTop] = useState<boolean>(false);
-  const [topLimit, setTopLimit] = useState<number>(10);
 
   const validateInput = (): boolean => {
     setError('');
@@ -47,8 +44,6 @@ const App: React.FC = () => {
     setLoading(true);
     setError('');
     setBestWord(null);
-    setTopWords([]);
-    setShowTop(false);
 
     try {
       const response = await fetch('/api/find-best', {
@@ -83,45 +78,6 @@ const App: React.FC = () => {
     }
   };
 
-  const findTopWords = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    if (!validateInput()) return;
-
-    setLoading(true);
-    setError('');
-    setBestWord(null);
-    setTopWords([]);
-    setShowTop(true);
-
-    try {
-      const response = await fetch('/api/find-top', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          rack: rack.trim(),
-          word: boardWord.trim() || undefined,
-          limit: topLimit,
-        }),
-      });
-
-      const data: ApiResponse = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Failed to find words');
-        return;
-      }
-
-      if (data.words && data.words.length > 0) {
-        setTopWords(data.words);
-      } else {
-        setError('No valid words found for this rack');
-      }
-    } catch (err) {
-      setError(`Error: ${err instanceof Error ? err.message : 'Unknown error'}`);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return (
     <div className="app-container">
@@ -179,40 +135,12 @@ const App: React.FC = () => {
                 </button>
               </div>
             </form>
-
-            <form onSubmit={findTopWords} className="scrabble-form">
-              <div className="form-group">
-                <label htmlFor="topLimit">Number of Words (Max 100)</label>
-                <input
-                  id="topLimit"
-                  type="number"
-                  min="1"
-                  max="100"
-                  value={topLimit}
-                  onChange={(e: ChangeEvent<HTMLInputElement>) =>
-                    setTopLimit(parseInt(e.target.value) || 10)
-                  }
-                  className="form-input"
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="button-group">
-                <button
-                  type="submit"
-                  className="btn btn-secondary"
-                  disabled={loading || rack.length === 0}
-                >
-                  {loading ? 'Finding...' : '📋 Find Top Words'}
-                </button>
-              </div>
-            </form>
           </div>
         </section>
 
         {error && <div className="error-message">{error}</div>}
 
-        {bestWord && !showTop && (
+        {bestWord && (
           <section className="result-section">
             <h2>Best Word Found</h2>
             <div className="word-card">
@@ -231,21 +159,6 @@ const App: React.FC = () => {
                   )}
                 </div>
               </div>
-            </div>
-          </section>
-        )}
-
-        {topWords.length > 0 && showTop && (
-          <section className="result-section">
-            <h2>Top {topWords.length} Words Found</h2>
-            <div className="words-list">
-              {topWords.map((word, index) => (
-                <div key={index} className="word-item">
-                  <span className="rank">#{index + 1}</span>
-                  <span className="word-name">{word.word}</span>
-                  <span className="word-score">{word.score} pts</span>
-                </div>
-              ))}
             </div>
           </section>
         )}

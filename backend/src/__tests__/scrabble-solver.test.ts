@@ -25,18 +25,6 @@ describe('ScrabbleSolver', () => {
         T: 1
       });
     });
-
-    it('should find top words from rack "ABOUT"', () => {
-      const results = solver.findTopWords('ABOUT', '', 5);
-      
-      expect(results.length).toBeGreaterThan(0);
-      expect(results[0].word).toBeDefined();
-      expect(results[0].score).toBeGreaterThan(0);
-      // Results should be sorted by score descending
-      for (let i = 1; i < results.length; i++) {
-        expect(results[i - 1].score).toBeGreaterThanOrEqual(results[i].score);
-      }
-    });
   });
 
   describe('Test Case 2: Valid input - Rack with board word (tiles combined within limits)', () => {
@@ -57,17 +45,6 @@ describe('ScrabbleSolver', () => {
       
       expect(result).not.toBeNull();
       expect(result?.score).toBeGreaterThan(0);
-    });
-
-    it('should find top words from rack with board word', () => {
-      const results = solver.findTopWords('ADOORW', 'IZ', 5);
-      
-      expect(results.length).toBeGreaterThan(0);
-      expect(results[0].word).toBeDefined();
-      expect(results[0].score).toBeGreaterThan(0);
-      // Should find WIZARD
-      const hasWizard = results.some(r => r.word === 'WIZARD');
-      expect(hasWizard).toBe(true);
     });
   });
 
@@ -93,12 +70,6 @@ describe('ScrabbleSolver', () => {
         solver.findBestWord('AIDOORZ', 'QUIZ');
       }).toThrow();
     });
-
-    it('should throw error on findTopWords when tiles exceed limit', () => {
-      expect(() => {
-        solver.findTopWords('AIDOORZ', 'QUIZ', 10);
-      }).toThrow(/Letter/);
-    });
   });
 
   describe('Test Case 4: Invalid input - Rack exceeds 7 letters', () => {
@@ -111,12 +82,6 @@ describe('ScrabbleSolver', () => {
     it('should throw error with extra long rack', () => {
       expect(() => {
         solver.findBestWord('ABCDEFGHIJ'); // 10 letters
-      }).toThrow('Rack must contain 1-7 letters');
-    });
-
-    it('should throw error on findTopWords with 8+ letter rack', () => {
-      expect(() => {
-        solver.findTopWords('AIDOORWZ', '', 10); // 8 letters
       }).toThrow('Rack must contain 1-7 letters');
     });
   });
@@ -149,28 +114,6 @@ describe('ScrabbleSolver', () => {
       // Rack with only Q and Z (hard to form words)
       const result = solver.findBestWord('QZ');
       expect(result).toBeNull(); // Might not find valid words
-    });
-
-    it('should sort results by score descending', () => {
-      const results = solver.findTopWords('ABOUT', '', 10);
-      for (let i = 1; i < results.length; i++) {
-        expect(results[i - 1].score).toBeGreaterThanOrEqual(results[i].score);
-      }
-    });
-
-    it('should respect limit parameter', () => {
-      const results3 = solver.findTopWords('ABOUT', '', 3);
-      const results10 = solver.findTopWords('ABOUT', '', 10);
-      
-      expect(results3.length).toBeLessThanOrEqual(3);
-      expect(results10.length).toBeLessThanOrEqual(10);
-      expect(results10.length).toBeGreaterThanOrEqual(results3.length);
-    });
-
-    it('should handle single letter rack', () => {
-      const result = solver.findBestWord('A');
-      // A alone might not form a valid word, but shouldn't throw
-      // (depends on if 'A' is in dictionary)
     });
 
     it('should validate combined letters within tile limits', () => {

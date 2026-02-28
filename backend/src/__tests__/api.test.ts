@@ -42,27 +42,6 @@ describe('Scrabble Word Builder API', () => {
       }
     });
 
-    // POST /find-top endpoint
-    app.post('/find-top', (req: Request, res: Response, next: NextFunction) => {
-      try {
-        const { rack, word, limit } = req.body;
-
-        if (!rack || typeof rack !== 'string') {
-          return res.status(400).json({ error: 'Rack is required and must be a string' });
-        }
-
-        if (rack.length < 1 || rack.length > 7) {
-          return res.status(400).json({ error: 'Rack must contain 1-7 letters' });
-        }
-
-        const results = solver.findTopWords(rack, word || '', limit || 10);
-
-        res.json({ count: results.length, words: results });
-      } catch (error) {
-        next(error);
-      }
-    });
-
     // Health check endpoint
     app.get('/health', (req: Request, res: Response) => {
       res.json({ status: 'ok' });
@@ -87,18 +66,6 @@ describe('Scrabble Word Builder API', () => {
       expect(response.body).toHaveProperty('usedLetters');
       expect(response.body.word).toBe('ABOUT');
     });
-
-    it('POST /find-top should return top words for rack "ABOUT"', async () => {
-      const response = await request(app)
-        .post('/find-top')
-        .send({ rack: 'ABOUT', limit: 5 });
-
-      expect(response.status).toBe(200);
-      expect(response.body).toHaveProperty('count');
-      expect(response.body).toHaveProperty('words');
-      expect(Array.isArray(response.body.words)).toBe(true);
-      expect(response.body.words.length).toBeGreaterThan(0);
-    });
   });
 
   describe('Test Case 2: Valid input - Rack with board word', () => {
@@ -111,16 +78,6 @@ describe('Scrabble Word Builder API', () => {
       expect(response.body).toHaveProperty('word');
       expect(response.body).toHaveProperty('score');
       expect(response.body.score).toBeGreaterThan(0);
-    });
-
-    it('POST /find-top should return words with non-overlapping board word', async () => {
-      const response = await request(app)
-        .post('/find-top')
-        .send({ rack: 'AIDOORZ', word: 'MY', limit: 5 });
-
-      expect(response.status).toBe(200);
-      expect(response.body.count).toBeGreaterThan(0);
-      expect(Array.isArray(response.body.words)).toBe(true);
     });
   });
 
@@ -170,20 +127,6 @@ describe('Scrabble Word Builder API', () => {
         consoleSpy.mockRestore();
       }
     });
-
-    it('POST /find-top should return error for tile limit exceeded', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
-      try {
-        const response = await request(app)
-          .post('/find-top')
-          .send({ rack: 'AIDOORZ', word: 'QUIZ', limit: 10 });
-
-        expect(response.status).toBe(500);
-        expect(response.body).toHaveProperty('error');
-      } finally {
-        consoleSpy.mockRestore();
-      }
-    });
   });
 
   describe('Test Case 4: Invalid input - Rack exceeds 7 letters', () => {
@@ -201,15 +144,6 @@ describe('Scrabble Word Builder API', () => {
       const response = await request(app)
         .post('/find-best')
         .send({ rack: 'ABCDEFGHIJ' });
-
-      expect(response.status).toBe(400);
-      expect(response.body.error).toBe('Rack must contain 1-7 letters');
-    });
-
-    it('POST /find-top should reject oversized rack', async () => {
-      const response = await request(app)
-        .post('/find-top')
-        .send({ rack: 'AIDOORWZ', limit: 10 });
 
       expect(response.status).toBe(400);
       expect(response.body.error).toBe('Rack must contain 1-7 letters');
@@ -259,24 +193,6 @@ describe('Scrabble Word Builder API', () => {
 
       // May return 404 if no valid words, but should not reject for length
       expect([200, 404]).toContain(response.status);
-    });
-
-    it('POST /find-top should return specified limit correctly', async () => {
-      const response = await request(app)
-        .post('/find-top')
-        .send({ rack: 'ABOUT', limit: 3 });
-
-      expect(response.status).toBe(200);
-      expect(response.body.count).toBeLessThanOrEqual(3);
-    });
-
-    it('Default limit should be 10 when not specified', async () => {
-      const response = await request(app)
-        .post('/find-top')
-        .send({ rack: 'ABOUT' }); // No limit specified
-
-      expect(response.status).toBe(200);
-      expect(response.body.count).toBeLessThanOrEqual(10);
     });
   });
 });
