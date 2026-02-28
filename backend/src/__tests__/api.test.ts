@@ -126,41 +126,63 @@ describe('Scrabble Word Builder API', () => {
 
   describe('Test Case 3: Invalid input - Overlapping tiles', () => {
     it('POST /find-best should return error for overlapping rack and board word', async () => {
-      const response = await request(app)
-        .post('/find-best')
-        .send({ rack: 'AIDOORZ', word: 'QUIZ' });
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      try {
+        const response = await request(app)
+          .post('/find-best')
+          .send({ rack: 'AIDOORZ', word: 'QUIZ' });
 
-      expect(response.status).toBe(500);
-      expect(response.body).toHaveProperty('error');
-      expect(response.body.error).toContain('Invalid input');
-      expect(response.body.error).toContain('appears in both rack and board word');
+        expect(response.status).toBe(500);
+        expect(response.body).toHaveProperty('error');
+        expect(response.body.error).toContain('Invalid input');
+        expect(response.body.error).toContain('total count');
+        expect(response.body.error).toContain('exceeds available tiles');
+      } finally {
+        consoleSpy.mockRestore();
+      }
     });
 
-    it('POST /find-best should specifically detect Z overlap', async () => {
-      const response = await request(app)
-        .post('/find-best')
-        .send({ rack: 'AADORZ', word: 'QUIZ' });
+    it('POST /find-best should specifically detect Z tile limit exceeded', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      try {
+        const response = await request(app)
+          .post('/find-best')
+          .send({ rack: 'AADORZ', word: 'QUIZ' });
 
-      expect(response.status).toBe(500);
-      expect(response.body.error).toContain(`Letter 'Z'`);
+        expect(response.status).toBe(500);
+        expect(response.body.error).toContain(`Letter 'Z'`);
+        expect(response.body.error).toContain('exceeds available tiles');
+      } finally {
+        consoleSpy.mockRestore();
+      }
     });
 
-    it('POST /find-best should detect I overlap in AIDOORZ + QUIZ', async () => {
-      const response = await request(app)
-        .post('/find-best')
-        .send({ rack: 'AIDOORZ', word: 'QUIZ' });
+    it('POST /find-best should detect tile limit exceeded in AIDOORZ + QUIZ', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      try {
+        const response = await request(app)
+          .post('/find-best')
+          .send({ rack: 'AIDOORZ', word: 'QUIZ' });
 
-      expect(response.status).toBe(500);
-      expect(response.body.error).toContain(`Letter 'I'`);
+        expect(response.status).toBe(500);
+        expect(response.body.error).toContain('total count');
+      } finally {
+        consoleSpy.mockRestore();
+      }
     });
 
-    it('POST /find-top should return error for overlapping letters', async () => {
-      const response = await request(app)
-        .post('/find-top')
-        .send({ rack: 'AIDOORZ', word: 'QUIZ', limit: 10 });
+    it('POST /find-top should return error for tile limit exceeded', async () => {
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      try {
+        const response = await request(app)
+          .post('/find-top')
+          .send({ rack: 'AIDOORZ', word: 'QUIZ', limit: 10 });
 
-      expect(response.status).toBe(500);
-      expect(response.body).toHaveProperty('error');
+        expect(response.status).toBe(500);
+        expect(response.body).toHaveProperty('error');
+      } finally {
+        consoleSpy.mockRestore();
+      }
     });
   });
 

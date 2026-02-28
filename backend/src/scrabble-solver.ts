@@ -88,6 +88,23 @@ export class ScrabbleSolver {
   }
 
   /**
+   * Validate combined rack + board word doesn't exceed tile limits
+   */
+  private validateCombinedLetters(rack: string, boardWord: string): void {
+    if (!boardWord) return;
+    
+    const combinedLetters = this.countLetters(rack + boardWord);
+    for (const [letter, count] of Object.entries(combinedLetters)) {
+      const maxTiles = this.letterData[letter]?.tiles || 0;
+      if (count > maxTiles) {
+        throw new Error(
+          `Invalid input: Letter '${letter}' total count (${count}) exceeds available tiles (${maxTiles})`
+        );
+      }
+    }
+  }
+
+  /**
    * Generate all possible combinations of letters
    */
   private generateCombinations(
@@ -120,24 +137,6 @@ export class ScrabbleSolver {
   }
 
   /**
-   * Check if rack and board word have overlapping tiles (same letter in both)
-   */
-  private checkTileOverlap(rack: string, boardWord: string): void {
-    if (!boardWord) return;
-
-    const rackLetters = this.countLetters(rack);
-    const boardLetters = this.countLetters(boardWord);
-
-    for (const [letter, count] of Object.entries(boardLetters)) {
-      if (rackLetters[letter]) {
-        throw new Error(
-          `Invalid input: Letter '${letter}' appears in both rack and board word. Only one tile of each letter is available.`
-        );
-      }
-    }
-  }
-
-  /**
    * Find the highest scoring valid word
    */
   public findBestWord(
@@ -149,8 +148,8 @@ export class ScrabbleSolver {
       throw new Error('Rack must contain 1-7 letters');
     }
 
-    // Check for overlapping tiles between rack and board word
-    this.checkTileOverlap(rack, boardWord);
+    // Validate combined rack + board word doesn't exceed tile limits
+    this.validateCombinedLetters(rack, boardWord);
 
     // Combine rack and board word to get available letters
     const availableLetters = this.countLetters(rack + boardWord);
@@ -213,8 +212,8 @@ export class ScrabbleSolver {
       throw new Error('Rack must contain 1-7 letters');
     }
 
-    // Check for overlapping tiles between rack and board word
-    this.checkTileOverlap(rack, boardWord);
+    // Validate combined rack + board word doesn't exceed tile limits
+    this.validateCombinedLetters(rack, boardWord);
 
     // Combine rack and board word to get available letters
     const availableLetters = this.countLetters(rack + boardWord);
