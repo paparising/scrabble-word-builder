@@ -33,6 +33,7 @@ Then open your browser:
 
 - 🌐 **Frontend**: http://localhost:3000
 - 🔌 **API Health Check**: http://localhost:5123/health
+- 🧠 **Large dictionary support**: Uses adaptive dictionary loading (memory cache for smaller files, streaming for larger files)
 
 ### Stop Backend & Frontend
 
@@ -63,9 +64,9 @@ npm run stop:backend
 $body = ConvertTo-Json @{"rack"="ABOUT"}
 Invoke-RestMethod -Uri http://localhost:5123/find-best -Method Post -Body $body -ContentType "application/json"
 
-# Top 5 words
-$body = ConvertTo-Json @{"rack"="ABOUT"; "limit"=5}
-Invoke-RestMethod -Uri http://localhost:5123/find-top -Method Post -Body $body -ContentType "application/json"
+# With board word
+$body = ConvertTo-Json @{"rack"="ADOORW"; "word"="IZ"}
+Invoke-RestMethod -Uri http://localhost:5123/find-best -Method Post -Body $body -ContentType "application/json"
 ```
 
 ## 🧪 Run Tests
@@ -75,7 +76,7 @@ cd backend
 npm test
 ```
 
-Should see: **32 tests passing** ✅
+Should see: **27 tests passing** ✅
 
 See [TEST_SUMMARY.md](TEST_SUMMARY.md) for details.
 

@@ -13,6 +13,7 @@ const PORT = process.env.PORT || 5123;
 // Initialize Scrabble Solver
 const dictionaryPath = path.join(__dirname, `../../${process.env.DICTIONARY_PATH || 'data/dictionary.txt'}`);
 const letterDataPath = path.join(__dirname, `../../${process.env.LETTER_DATA_PATH || 'data/letter_data.json'}`);
+const maxCachedDictionaryBytes = Number(process.env.MAX_CACHED_DICTIONARY_BYTES) || 20 * 1024 * 1024;
 let solver: ScrabbleSolver;
 
 // Middleware
@@ -20,7 +21,7 @@ app.use(cors());
 app.use(express.json());
 
 try {
-  solver = new ScrabbleSolver(dictionaryPath, letterDataPath);
+  solver = new ScrabbleSolver(dictionaryPath, letterDataPath, maxCachedDictionaryBytes);
   console.log('Scrabble Solver initialized successfully');
 } catch (error) {
   console.error('Failed to initialize Scrabble Solver:', error);

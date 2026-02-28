@@ -1,5 +1,4 @@
 import * as fs from 'fs';
-import * as path from 'path';
 
 interface LetterData {
   [letter: string]: {
@@ -15,8 +14,12 @@ interface WordResult {
 }
 
 export class ScrabbleSolver {
-  private dictionary: Set<string>;
+  private static readonly DEFAULT_MAX_CACHED_DICTIONARY_BYTES = 20 * 1024 * 1024;
+
+  private dictionaryPath: string;
+  private cachedDictionaryWords: string[] | null = null;
   private letterData: LetterData;
+  private maxCachedDictionaryBytes: number;
 
   /**
    * Load file with error handling
@@ -32,16 +35,101 @@ export class ScrabbleSolver {
     }
   }
 
-  constructor(dictionaryPath: string, letterDataPath: string) {
-    // Load dictionary
-    const dictContent = this.loadFile(dictionaryPath, 'Dictionary');
-    this.dictionary = new Set(
-      dictContent
-        .split('\n')
+  /**
+   * Validate file exists and is readable
+   */
+  private validateFilePath(filePath: string, description: string): void {
+    try {
+      fs.accessSync(filePath, fs.constants.R_OK);
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : String(error);
+      console.error(`✗ Failed to access ${description} from ${filePath}`);
+      console.error(`  Error: ${errorMsg}`);
+      throw new Error(`${description} initialization failed: ${errorMsg}`);
+    }
+  }
+
+  /**
+   * Iterate dictionary words from file without loading entire file into memory
+   */
+  private *iterateDictionaryWords(): Generator<string> {
+    const fileDescriptor = fs.openSync(this.dictionaryPath, 'r');
+    const bufferSize = 64 * 1024;
+    const buffer = Buffer.alloc(bufferSize);
+    let pending = '';
+
+    try {
+      let bytesRead: number;
+
+      do {
+        bytesRead = fs.readSync(fileDescriptor, buffer, 0, bufferSize, null);
+        if (bytesRead <= 0) {
+          break;
+        }
+
+        pending += buffer.toString('utf-8', 0, bytesRead);
+        const lines = pending.split(/\r?\n/);
+        pending = lines.pop() || '';
+
+        for (const line of lines) {
+          const word = line.trim().toUpperCase();
+          if (word.length > 0) {
+            yield word;
+          }
+        }
+      } while (bytesRead > 0);
+
+      const finalWord = pending.trim().toUpperCase();
+      if (finalWord.length > 0) {
+        yield finalWord;
+      }
+    } finally {
+      fs.closeSync(fileDescriptor);
+    }
+  }
+
+  /**
+   * Load dictionary into memory when file size is reasonable; otherwise keep streaming mode
+   */
+  private initializeDictionarySource(): void {
+    const dictionaryStats = fs.statSync(this.dictionaryPath);
+
+    if (dictionaryStats.size <= this.maxCachedDictionaryBytes) {
+      const dictContent = this.loadFile(this.dictionaryPath, 'Dictionary');
+      this.cachedDictionaryWords = dictContent
+        .split(/\r?\n/)
         .map(word => word.trim().toUpperCase())
-        .filter(word => word.length > 0)
+        .filter(word => word.length > 0);
+
+      console.log(
+        `✓ Dictionary loaded in memory from ${this.dictionaryPath} (${this.cachedDictionaryWords.length} words)`
+      );
+      return;
+    }
+
+    this.cachedDictionaryWords = null;
+    console.log(
+      `✓ Dictionary configured in streaming mode from ${this.dictionaryPath} (${dictionaryStats.size} bytes)`
     );
-    console.log(`✓ Dictionary loaded successfully from ${dictionaryPath} (${this.dictionary.size} words)`);
+  }
+
+  /**
+   * Get dictionary words from memory cache or streaming iterator
+   */
+  private getDictionaryWords(): Iterable<string> {
+    return this.cachedDictionaryWords ?? this.iterateDictionaryWords();
+  }
+
+  constructor(
+    dictionaryPath: string,
+    letterDataPath: string,
+    maxCachedDictionaryBytes: number = ScrabbleSolver.DEFAULT_MAX_CACHED_DICTIONARY_BYTES
+  ) {
+    // Validate dictionary file path
+    this.validateFilePath(dictionaryPath, 'Dictionary');
+    this.dictionaryPath = dictionaryPath;
+    this.maxCachedDictionaryBytes = maxCachedDictionaryBytes;
+    this.initializeDictionarySource();
 
     // Load letter data
     const letterContent = this.loadFile(letterDataPath, 'Letter data');
@@ -121,61 +209,24 @@ export class ScrabbleSolver {
   }
 
   /**
-   * Generate all possible combinations of letters
-   */
-  private generateCombinations(
-    letters: string,
-    minLength: number = 2,
-    maxLength: number = 15
-  ): string[] {
-    const letterArray = letters.toUpperCase().split('');
-    const combinations: Set<string> = new Set();
-
-    const generate = (current: string, remaining: string[]) => {
-      if (current.length >= minLength && current.length <= maxLength) {
-        combinations.add(current);
-      }
-      if (current.length >= maxLength || remaining.length === 0) {
-        return;
-      }
-
-      for (let i = 0; i < remaining.length; i++) {
-        const newRemaining = [
-          ...remaining.slice(0, i),
-          ...remaining.slice(i + 1),
-        ];
-        generate(current + remaining[i], newRemaining);
-      }
-    };
-
-    generate('', letterArray);
-    return Array.from(combinations);
-  }
-
-  /**
    * Validate if a combination is a valid word
    */
-  private isValidComboWord(
-    combo: string,
+  private isValidDictionaryWord(
+    word: string,
     availableLetters: { [letter: string]: number }
   ): boolean {
-    // Check if word exists in dictionary
-    if (!this.dictionary.has(combo)) {
-      return false;
-    }
-
     // Check if word length is valid (2-15 letters)
-    if (combo.length < 2 || combo.length > 15) {
+    if (word.length < 2 || word.length > 15) {
       return false;
     }
 
     // Check if can form from combined available letters
-    if (!this.canFormWord(combo, availableLetters)) {
+    if (!this.canFormWord(word, availableLetters)) {
       return false;
     }
 
     // Check tile limits (no letter exceeds max tiles in Scrabble)
-    if (!this.checkTileLimit(combo)) {
+    if (!this.checkTileLimit(word)) {
       return false;
     }
 
@@ -200,35 +251,28 @@ export class ScrabbleSolver {
     // Combine rack and board word to get available letters
     const availableLetters = this.countLetters(rack + boardWord);
     
-    // Generate combinations from available letters (including board word letters)
-    const rackChars = rack.toUpperCase().split('');
-    const boardChars = boardWord.toUpperCase().split('');
-    const allLetters = rackChars.concat(boardChars);
-    
-    const combinations = this.generateCombinations(allLetters.join(''), 2, 15);
-
     let bestWord: WordResult | null = null;
     let bestScore = 0;
 
-    for (const combo of combinations) {
-      // Validate if combo is a valid word
-      if (!this.isValidComboWord(combo, availableLetters)) {
+    for (const candidateWord of this.getDictionaryWords()) {
+      // Validate if candidate is a valid word
+      if (!this.isValidDictionaryWord(candidateWord, availableLetters)) {
         continue;
       }
 
       // Calculate score
-      const score = this.calculateScore(combo);
+      const score = this.calculateScore(candidateWord);
 
       if (
         !bestWord ||
         score > bestScore ||
-        (score === bestScore && combo.localeCompare(bestWord.word) < 0)
+        (score === bestScore && candidateWord.localeCompare(bestWord.word) < 0)
       ) {
         bestScore = score;
         bestWord = {
-          word: combo,
+          word: candidateWord,
           score,
-          usedLetters: this.countLetters(combo),
+          usedLetters: this.countLetters(candidateWord),
         };
       }
     }

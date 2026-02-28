@@ -13,7 +13,7 @@ A full-stack web application that generates the highest scoring valid word based
 💎 **Scrabble Scoring**: Uses authentic Scrabble point values for each letter  
 🌐 **Web-Based**: Clean, responsive UI for desktop and mobile devices  
 ⚡ **Fast Performance**: Efficient algorithm for word generation and validation  
-✅ **Fully Tested**: 26 comprehensive tests covering all features
+✅ **Fully Tested**: 27 comprehensive tests covering all features
 
 ## Project Structure
 
@@ -266,6 +266,7 @@ ABUSE
 - **Length**: Must be 2-15 letters long
 - **Dictionary**: Must exist in the dictionary
 - **Formable**: Must be formed from available letters in rack
+- **Tie-breaker**: If scores are equal, the alphabetically first word is returned
 
 ### ✅ Tile Limits
 
@@ -301,7 +302,7 @@ Follows standard Scrabble point values:
 
 ## Testing
 
-The application includes a comprehensive test suite with 32 tests covering all features:
+The application includes a comprehensive test suite with 27 tests covering all features:
 
 ### Run Tests
 
@@ -321,6 +322,15 @@ npm test
 For detailed test information, see [TEST_SUMMARY.md](TEST_SUMMARY.md)
 
 ## Development
+
+### Environment Configuration
+
+Backend `.env` supports:
+
+- `DICTIONARY_PATH` - dictionary file path
+- `LETTER_DATA_PATH` - letter data file path
+- `PORT` - backend API port
+- `MAX_CACHED_DICTIONARY_BYTES` - dictionary size threshold for in-memory caching; files above this are streamed from disk
 
 ### Building for Production
 
@@ -431,10 +441,12 @@ npm test
 ## Performance Notes
 
 - **Dictionary Size**: 2,280+ words for comprehensive coverage
-- **Word Generation**: Uses combinatorial algorithm with pruning
-- **Search Optimization**: Real-time dictionary lookup with Set data structure
+- **Word Search**: Scans dictionary words directly against available letters
+- **Search Optimization**: Adaptive dictionary source
+  - Caches in memory for smaller dictionaries
+  - Streams from disk in chunks for larger dictionaries
 - **Response Time**: Typically <100ms for finding best word
-- **Memory**: Lightweight, suitable for browser and server environments
+- **Memory**: Bounded dictionary memory usage, scales better for large dictionary files
 
 ## Future Enhancements
 
