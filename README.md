@@ -9,12 +9,11 @@ A full-stack web application that generates the highest scoring valid word based
 ## Features
 
 ✨ **Find Best Word**: Quickly identify the highest scoring valid word for your rack  
-📋 **Top Words**: Discover the top N scoring words (up to 100)  
 🎯 **Smart Validation**: Checks dictionary, tile limits, and letter availability  
 💎 **Scrabble Scoring**: Uses authentic Scrabble point values for each letter  
 🌐 **Web-Based**: Clean, responsive UI for desktop and mobile devices  
 ⚡ **Fast Performance**: Efficient algorithm for word generation and validation  
-✅ **Fully Tested**: 32 comprehensive tests covering all features
+✅ **Fully Tested**: 26 comprehensive tests covering all features
 
 ## Project Structure
 
@@ -150,15 +149,11 @@ npm run start
 3. **Optional: Board Word**
    - If building upon an existing word on the board, enter it
    - This ensures letter counts don't exceed available tiles
-   - **Important**: Rack and board word cannot share the same letter tiles
+   - Letters can appear in both rack and board word, as long as the combined total doesn't exceed available tiles
 
 4. **Find Best Word**
    - Click "🎯 Find Best Word" to get the highest scoring single word
    - Results show the word, score, and letters used
-
-5. **Find Top Words**
-   - Adjust the limit (1-100) for how many top words to find
-   - Click "📋 Find Top Words" to see ranked results
 
 ## API Endpoints
 
@@ -197,36 +192,6 @@ Find the highest scoring valid word.
 ```json
 {
   "error": "Error message describing the issue"
-}
-```
-
-### POST /find-top
-
-Find the top N scoring words.
-
-**Request Body:**
-
-```json
-{
-  "rack": "LETTERS",
-  "word": "OPTIONAL_BOARD_WORD",
-  "limit": 10
-}
-```
-
-**Response (200):**
-
-```json
-{
-  "count": 10,
-  "words": [
-    {
-      "word": "WORD1",
-      "score": 30,
-      "usedLetters": {}
-    }
-    // ... more words, sorted by score (descending)
-  ]
 }
 ```
 
@@ -278,8 +243,8 @@ ABUSE
 
 ### ✅ Board Word Validation
 
-- **Overlap**: Rack and board word cannot share any letter tiles
-- **Example**: Rack "ABOUT" + Board Word "BOAT" is invalid (both use A, B, O, T)
+- **Optional**: Can be provided to build upon existing board words
+- **Combined Tiles**: Rack and board word letters combined cannot exceed tile limits
 
 ### ✅ Word Validation
 
@@ -296,8 +261,8 @@ ABUSE
 ### ❌ Rejected Cases
 
 1. **Rack exceeds 7 letters**: `"AIDOORWZ"` → Error
-2. **Overlapping tiles**: Rack `"AIDOORZ"` + Word `"QUIZ"` (I overlap) → Error
-3. **Tile exceeding limit**: Rack with multiple Z's when only 1 exists → Error
+2. **Combined tiles exceed limit**: Rack `"AIDOORZ"` + Word `"QUIZ"` (combined Z's exceed 1 available) → Error
+3. **Tile exceeding limit**: Using more of any letter than available tiles → Error
 
 ## Scoring System
 
@@ -481,172 +446,3 @@ Created as a Scrabble Word Builder challenge solution in 2026.
 ---
 
 **Need help?** Check the API responses for detailed error messages. See [QUICKSTART.md](QUICKSTART.md) for common setup issues.
-
-## Rules & Validation
-
-✅ **Rack Validation**
-
-- Must contain 1-7 letters
-- Cannot be empty
-
-✅ **Word Validation**
-
-- Must be 2-15 letters long
-- Must exist in the dictionary
-- Can be formed from available letters in rack
-
-✅ **Tile Limits**
-
-- Total usage of each letter (rack + board word) cannot exceed Scrabble tile availability
-- Standard Scrabble: 9 A's, 2 B's, 1 Q, 1 Z, etc.
-
-✅ **Bonus Features (Not Implemented)**
-
-- Blank tiles (represented as wildcards)
-- Bonus squares (double/triple letter/word)
-- Board layout and word positioning
-- Cross-word checking
-
-## Scoring System
-
-Follows standard Scrabble point values:
-
-| Letter | Points | Tiles | Letter | Points | Tiles |
-| ------ | ------ | ----- | ------ | ------ | ----- |
-| A      | 1      | 9     | N      | 1      | 6     |
-| B      | 3      | 2     | O      | 1      | 8     |
-| C      | 3      | 2     | P      | 3      | 2     |
-| D      | 2      | 4     | Q      | 10     | 1     |
-| E      | 1      | 12    | R      | 1      | 6     |
-| F      | 4      | 2     | S      | 1      | 4     |
-| G      | 2      | 3     | T      | 1      | 6     |
-| H      | 4      | 2     | U      | 1      | 4     |
-| I      | 1      | 9     | V      | 4      | 2     |
-| J      | 8      | 1     | W      | 4      | 2     |
-| K      | 5      | 1     | X      | 8      | 1     |
-| L      | 1      | 4     | Y      | 4      | 2     |
-| M      | 3      | 2     | Z      | 10     | 1     |
-
-## Development
-
-### Building for Production
-
-**Backend:**
-
-```bash
-cd backend
-npm run build
-```
-
-**Frontend:**
-
-```bash
-cd frontend
-npm run build
-```
-
-Build artifacts:
-
-- Backend: `backend/dist/`
-- Frontend: `frontend/dist/`
-
-### Technology Stack
-
-**Backend:**
-
-- Node.js
-- TypeScript
-- Express.js
-- CORS middleware
-
-**Frontend:**
-
-- React 18
-- TypeScript
-- Vite (bundler)
-- CSS3 for styling
-
-### Code Quality
-
-All code is written in TypeScript with strict type checking enabled:
-
-```json
-{
-  "strict": true,
-  "noImplicitAny": true,
-  "strictNullChecks": true
-}
-```
-
-## Troubleshooting
-
-### Issue: "Cannot find module" errors
-
-**Solution:**
-
-```bash
-# Ensure all dependencies are installed
-npm run install:all
-
-# Clear node_modules and reinstall
-rm -rf backend/node_modules frontend/node_modules
-npm run install:all
-```
-
-### Issue: Port already in use (5000 or 3000)
-
-**Solution:**
-
-```bash
-# Change frontend port in frontend/vite.config.ts
-# Change backend port via environment variable
-PORT=5001 npm run start:backend
-```
-
-### Issue: Dictionary file not found
-
-**Solution:**
-
-- Ensure `data/dictionary.txt` exists in project root
-- Verify correct file path in backend code
-- Check file has read permissions
-
-### Issue: CORS errors in browser console
-
-**Solution:**
-
-- Ensure backend is running on port 5000
-- Verify frontend vite.config.ts proxy settings
-- Check backend is started before frontend
-
-## Performance Notes
-
-- **Dictionary Size**: ~80,000+ words for comprehensive coverage
-- **Word Generation**: Uses combinatorial algorithm with pruning
-- **Search Optimization**: Real-time dictionary lookup with Set data structure
-- **Response Time**: Typically <100ms for finding best word
-
-## Future Enhancements
-
-🔮 **Potential Features:**
-
-- Blank tile support
-- Bonus square multipliers
-- Cross-word validation
-- Game history tracking
-- Multiplayer support
-- Word hint suggestions
-- Letter exchange functionality
-- Undo/redo moves
-
-## License
-
-This project is provided as-is for educational purposes.
-
-## Author
-
-Created as a Scrabble Word Builder challenge solution in 2026.
-
----
-
-**Questions or Issues?** Check the API responses for detailed error messages and validation guidance.
