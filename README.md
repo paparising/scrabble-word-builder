@@ -38,7 +38,7 @@ scrabble-word-builder/
 │   ├── tsconfig.json
 │   └── vite.config.ts
 ├── data/
-│   ├── dictionary.txt         # 2,280+ English words
+│   ├── dictionary.txt         # 7,877 English words
 │   └── letter_data.json       # Letter scores and tile counts
 ├── README.md                  # This file
 ├── QUICKSTART.md              # Quick setup guide
@@ -239,7 +239,7 @@ Contains Scrabble letter values and tile counts:
 
 ### dictionary.txt
 
-One valid English word per line (2,280+ words):
+One valid English word per line (**7,877 words total**):
 
 ```
 ABOUT
@@ -247,6 +247,20 @@ ABOVE
 ABUSE
 ...
 ```
+
+#### Dictionary Word Count by Letter
+
+| Letter | Words | Letter | Words | Letter | Words |
+| ------ | ----- | ------ | ----- | ------ | ----- |
+| A      | 299   | J      | 65    | S      | 952   |
+| B      | 248   | K      | 50    | T      | 535   |
+| C      | 483   | L      | 247   | U      | 110   |
+| D      | 305   | M      | 314   | V      | 163   |
+| E      | 285   | N      | 149   | W      | 273   |
+| F      | 287   | O      | 162   | X      | 281   |
+| G      | 171   | P      | 585   | Y      | 427   |
+| H      | 206   | Q      | 32    | Z      | 533   |
+| I      | 248   | R      | 467   |        |       |
 
 ## Validation Rules
 
@@ -440,7 +454,7 @@ npm test
 
 ## Performance Notes
 
-- **Dictionary Size**: 2,280+ words for comprehensive coverage
+- **Dictionary Size**: 7,877 words for comprehensive coverage
 - **Word Search**: Scans dictionary words directly against available letters
 - **Search Optimization**: Adaptive dictionary source
   - Caches in memory for smaller dictionaries
