@@ -94,7 +94,7 @@ cd backend
 npm run build
 ```
 
-> **Note:** the TypeScript build step now excludes `src/__tests__` so that test-only imports (e.g. `supertest`, `express`) don’t trigger errors during compilation. Testing is still performed by Jest, which transpiles the tests separately.### 3. (Optional) Verify Setup
+> **Note:** the TypeScript build step now excludes `src/__tests__` so that test-only imports (e.g. `supertest`, `express`) don’t trigger errors during compilation. In addition, core runtime type packages (`@types/express`, `@types/cors`, `@types/dotenv`) have been promoted to regular dependencies so they are always present during `tsc`. Testing is still performed by Jest, which transpiles the tests separately.### 3. (Optional) Verify Setup
 
 ```bash
 # Check Node version
