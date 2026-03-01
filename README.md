@@ -13,7 +13,14 @@ A full-stack web application that generates the highest scoring valid word based
 💎 **Scrabble Scoring**: Uses authentic Scrabble point values for each letter  
 🌐 **Web-Based**: Clean, responsive UI for desktop and mobile devices  
 ⚡ **Fast Performance**: Efficient algorithm for word generation and validation  
-✅ **Fully Tested**: 27 comprehensive tests covering all features
+✅ **Fully Tested**: 27 comprehensive tests covering all features  
+🔄 **CI/CD Pipeline**: Automated testing with GitHub Actions
+
+## 📸 Screenshot
+
+![Scrabble Word Builder App](images/app-screenshot.png)
+
+_Example: Finding the best word "WIZARD" (19 points) from rack "AIDOORW" with board word "WIZ"_
 
 ## Project Structure
 
@@ -40,6 +47,11 @@ scrabble-word-builder/
 ├── data/
 │   ├── dictionary.txt         # 7,877 English words
 │   └── letter_data.json       # Letter scores and tile counts
+├── images/
+│   └── app-screenshot.png     # Application screenshot
+├── .github/
+│   └── workflows/
+│       └── ci.yml             # CI/CD pipeline
 ├── README.md                  # This file
 ├── QUICKSTART.md              # Quick setup guide
 └── TEST_SUMMARY.md            # Comprehensive test documentation
@@ -334,6 +346,38 @@ npm test
 - ✅ **Additional**: Edge cases, boundary conditions, API validation
 
 For detailed test information, see [TEST_SUMMARY.md](TEST_SUMMARY.md)
+
+## CI/CD Pipeline
+
+The project includes a GitHub Actions workflow for continuous integration:
+
+### Automated Checks
+
+| Job              | Description                                      |
+| ---------------- | ------------------------------------------------ |
+| **Build & Test** | Builds both backend and frontend, runs all tests |
+| **Code Quality** | TypeScript type checking for both projects       |
+
+### Triggers
+
+- ✅ Push to `master` or `main` branch
+- ✅ Pull requests to `master` or `main` branch
+
+### Pipeline Steps
+
+1. Install dependencies (backend & frontend)
+2. Build TypeScript projects
+3. Run Jest test suite with coverage
+4. Verify data files exist (`dictionary.txt`, `letter_data.json`)
+5. TypeScript compilation checks
+
+### Status Badge
+
+Add this badge to show CI status:
+
+```markdown
+![CI](https://github.com/YOUR_USERNAME/scrabble-word-builder/actions/workflows/ci.yml/badge.svg)
+```
 
 ## Development
 
