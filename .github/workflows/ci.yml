@@ -26,9 +26,9 @@ jobs:
           # do not enable caching; omitting the `cache` key avoids any lookup errors
 
 
-      - name: Install backend dependencies
+      - name: Install backend dependencies (including dev)
         working-directory: ./backend
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Install frontend dependencies
         working-directory: ./frontend
@@ -80,9 +80,9 @@ jobs:
             backend/package-lock.json
             frontend/package-lock.json
 
-      - name: Install backend dependencies
+      - name: Install backend dependencies (including dev)
         working-directory: ./backend
-        run: npm ci
+        run: npm ci --include=dev
 
       - name: Install frontend dependencies
         working-directory: ./frontend
