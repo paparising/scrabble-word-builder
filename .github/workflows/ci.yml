@@ -26,8 +26,7 @@ jobs:
           # do not enable caching; omitting the `cache` key avoids any lookup errors
 
 
-      - name: Install backend dependencies (including dev)
-        working-directory: ./backend
+      - name: Install workspace dependencies (including dev)
         run: npm ci --include=dev
 
       - name: Install frontend dependencies
@@ -38,13 +37,17 @@ jobs:
         working-directory: ./backend
         run: npm run build
 
+      - name: Run backend tests
+        working-directory: ./backend
+        run: npm test -- --ci --coverage --passWithNoTests
+
       - name: Build frontend
         working-directory: ./frontend
         run: npm run build
 
-      - name: Run backend tests
-        working-directory: ./backend
-        run: npm test -- --ci --coverage --passWithNoTests
+      - name: (optional) Run frontend tests
+        working-directory: ./frontend
+        run: npm test || echo "no frontend tests"
 
       - name: Verify dictionary exists
         run: |
@@ -80,8 +83,7 @@ jobs:
             backend/package-lock.json
             frontend/package-lock.json
 
-      - name: Install backend dependencies (including dev)
-        working-directory: ./backend
+      - name: Install workspace dependencies (including dev)
         run: npm ci --include=dev
 
       - name: Install frontend dependencies
