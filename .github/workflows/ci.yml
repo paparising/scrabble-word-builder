@@ -26,12 +26,8 @@ jobs:
           # do not enable caching; omitting the `cache` key avoids any lookup errors
 
 
-      - name: Install workspace dependencies (including dev)
+      - name: Install all workspace dependencies
         run: npm install --include=dev
-
-      - name: Install frontend dependencies
-        working-directory: ./frontend
-        run: npm ci
 
       - name: Build backend
         working-directory: ./backend
@@ -83,12 +79,8 @@ jobs:
             backend/package-lock.json
             frontend/package-lock.json
 
-      - name: Install workspace dependencies (including dev)
+      - name: Install all workspace dependencies
         run: npm install --include=dev
-
-      - name: Install frontend dependencies
-        working-directory: ./frontend
-        run: npm install
 
       - name: TypeScript check (backend)
         working-directory: ./backend
