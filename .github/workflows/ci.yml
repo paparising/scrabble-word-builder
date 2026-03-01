@@ -1,0 +1,99 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [master, main]
+  pull_request:
+    branches: [master, main]
+
+jobs:
+  test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build backend
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Run backend tests
+        working-directory: ./backend
+        run: npm test -- --ci --coverage --passWithNoTests
+
+      - name: Verify dictionary exists
+        run: |
+          if [ ! -f "data/dictionary.txt" ]; then
+            echo "Error: dictionary.txt not found!"
+            exit 1
+          fi
+          WORD_COUNT=$(wc -l < data/dictionary.txt)
+          echo "Dictionary contains $WORD_COUNT words"
+
+      - name: Verify letter data exists
+        run: |
+          if [ ! -f "data/letter_data.json" ]; then
+            echo "Error: letter_data.json not found!"
+            exit 1
+          fi
+          echo "Letter data file validated"
+
+  lint:
+    name: Code Quality
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+          cache: 'npm'
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: TypeScript check (backend)
+        working-directory: ./backend
+        run: npx tsc --noEmit
+
+      - name: TypeScript check (frontend)
+        working-directory: ./frontend
+        run: npx tsc --noEmit
