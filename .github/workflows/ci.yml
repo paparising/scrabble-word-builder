@@ -23,10 +23,8 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'npm'
-          cache-dependency-path: |
-            backend/package-lock.json
-            frontend/package-lock.json
+          # cache disabled because lockfiles may be absent in this monorepo layout
+          cache: 'npm'  # keep default cache on, but do not specify dependency paths
 
       - name: Install backend dependencies
         working-directory: ./backend

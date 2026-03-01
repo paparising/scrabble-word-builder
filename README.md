@@ -371,6 +371,12 @@ The project includes a GitHub Actions workflow for continuous integration:
 4. Verify data files exist (`dictionary.txt`, `letter_data.json`)
 5. TypeScript compilation checks
 
+### Troubleshooting
+
+- **Cache path errors**: The workflow previously attempted to cache using `cache-dependency-path` entries for `backend/package-lock.json` and `frontend/package-lock.json`. If those files are missing, `setup-node` emits the shown error. The CI configuration was updated to stop specifying dependency paths (cache still works by default). To fix manually either add lockfiles or remove the `cache-dependency-path` lines, as shown in the updated workflow.
+- **Build failures**: Confirm both `backend` and `frontend` scripts (`npm run build`) work locally. The pipeline mirrors root commands with `working-directory` set.
+- **Port conflicts**: Backend tests start a server; make sure no process occupies port `5123` on the runner (should not happen on GitHub-hosted runners).
+
 ### Status Badge
 
 Add this badge to show CI status:
