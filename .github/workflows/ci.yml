@@ -74,10 +74,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          cache: 'npm'
-          cache-dependency-path: |
-            backend/package-lock.json
-            frontend/package-lock.json
+          # no caching to avoid path resolution errors
 
       - name: Install all workspace dependencies
         run: npm install --include=dev
