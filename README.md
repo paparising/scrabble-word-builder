@@ -94,7 +94,7 @@ cd backend
 npm run build
 ```
 
-### 3. (Optional) Verify Setup
+> **Note:** the TypeScript build step now excludes `src/__tests__` so that test-only imports (e.g. `supertest`, `express`) don’t trigger errors during compilation. Testing is still performed by Jest, which transpiles the tests separately.### 3. (Optional) Verify Setup
 
 ```bash
 # Check Node version
