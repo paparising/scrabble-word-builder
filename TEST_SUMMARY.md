@@ -6,7 +6,7 @@ Date verified: 2026-03-06
 
 This document summarizes the current automated test coverage.
 
-- Backend: Jest (`backend/src/__tests__`)
+- Backend: Jest (`backend/src/__tests__`, `backend/src/validation/__tests__`)
 - Frontend: Vitest (`frontend/src`)
 
 ## Current Results
@@ -14,8 +14,8 @@ This document summarizes the current automated test coverage.
 ### Backend
 
 - Status: all passing
-- Test suites: 3
-- Tests: 33 passing, 0 failing
+- Test suites: 5
+- Tests: 43 passing, 0 failing
 - Command: `cd backend && npm test -- --runInBand`
 
 ### Frontend
@@ -47,6 +47,14 @@ This document summarizes the current automated test coverage.
   - Letter-only checks for `rack` and `word`
   - Strict schema behavior (unexpected keys)
 
+- `backend/src/validation/__tests__/find-best.test.ts`
+  - Direct schema-level parsing and normalization checks
+  - Rack and board-word validation failure assertions
+
+- `backend/src/validation/__tests__/validation-service.test.ts`
+  - Unit checks for helper methods (`countLetters`, `validateCombinedLetters`, `buildAvailableLetters`)
+  - Validation error behavior for tile-limit overuse
+
 ## Important Contract Notes
 
 - Supported API routes are currently:
@@ -72,4 +80,4 @@ npm test
 
 ## Conclusion
 
-Both suites are green: backend `33/33` and frontend `4/4`.
+Both suites are green: backend `43/43` and frontend `4/4`.

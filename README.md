@@ -33,6 +33,9 @@ scrabble-word-builder/
 |  |  |- index.ts
 |  |  |- scrabble-solver.ts
 |  |  |- validation/
+|  |  |  |- __tests__/
+|  |  |  |  |- find-best.test.ts
+|  |  |  |  `- validation-service.test.ts
 |  |  |  |- find-best.ts
 |  |  |  `- validation-service.ts
 |  `- tsconfig.json
@@ -162,7 +165,7 @@ cd backend
 npm test -- --runInBand
 ```
 
-Current backend result: `33/33` tests passing across 3 suites.
+Current backend result: `43/43` tests passing across 5 suites.
 
 Frontend tests:
 
