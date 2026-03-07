@@ -16,17 +16,52 @@ Quick start: see `QUICKSTART.md`.
 
 ```text
 scrabble-word-builder/
+|- .github/
+|  `- workflows/
+|     `- ci.yml
 |- backend/
+|  |- dist/
+|  |- jest.config.js
+|  |- package.json
 |  |- src/
+|  |  |- __tests__/
+|  |  |  |- api.test.ts
+|  |  |  |- scrabble-solver.test.ts
+|  |  |  `- validation-service.test.ts
+|  |  |- errors/
+|  |  |  `- validation-error.ts
 |  |  |- index.ts
 |  |  |- scrabble-solver.ts
 |  |  |- validation/
-|  |  `- __tests__/
-|- frontend/
-|  `- src/
+|  |  |  |- find-best.ts
+|  |  |  `- validation-service.ts
+|  `- tsconfig.json
 |- data/
 |  |- dictionary.txt
 |  `- letter_data.json
+|- frontend/
+|  |- dist/
+|  |- index.html
+|  |- package.json
+|  |- src/
+|  |  |- App.css
+|  |  |- App.test.tsx
+|  |  |- App.tsx
+|  |  |- index.css
+|  |  |- main.tsx
+|  |  |- services/
+|  |  |  `- scrabbleApi.ts
+|  |  `- test/
+|  |     `- setup.ts
+|  |- tsconfig.json
+|  |- tsconfig.node.json
+|  |- vite.config.ts
+|  `- vitest.config.ts
+|- images/
+|- scripts/
+|  `- generate-dictionary.js
+|- package-lock.json
+|- package.json
 |- README.md
 |- QUICKSTART.md
 |- TEST_SUMMARY.md
