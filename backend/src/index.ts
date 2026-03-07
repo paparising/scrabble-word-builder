@@ -3,6 +3,8 @@ import * as path from 'path';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import { ScrabbleSolver } from './scrabble-solver';
+import { ValidationService } from './validation/validation-service';
+import { ValidationError } from './errors/validation-error';
 
 // Load environment variables
 dotenv.config({ path: path.join(__dirname, '../.env') });
@@ -37,15 +39,12 @@ try {
  */
 app.post('/find-best', (req: Request, res: Response, next: NextFunction) => {
   try {
-    const { rack, word } = req.body;
-
-    if (!rack || typeof rack !== 'string') {
-      return res.status(400).json({ error: 'Rack is required and must be a string' });
+    const validation = ValidationService.validateFindBestWordInput(req.body);
+    if (!validation.success) {
+      return res.status(400).json({ error: validation.error || 'Invalid request body' });
     }
 
-    if (rack.length < 1 || rack.length > 7) {
-      return res.status(400).json({ error: 'Rack must contain 1-7 letters' });
-    }
+    const { rack, word } = validation.data;
 
     const result = solver.findBestWord(rack, word || '');
 
@@ -69,6 +68,11 @@ app.get('/health', (req: Request, res: Response) => {
 // Error handling middleware
 app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
   console.error('Error:', error);
+
+  if (error instanceof ValidationError) {
+    return res.status(error.statusCode).json({ error: error.message });
+  }
+
   res.status(500).json({ error: error.message || 'Internal server error' });
 });
 

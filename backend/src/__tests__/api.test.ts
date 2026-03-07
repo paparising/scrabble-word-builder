@@ -3,6 +3,8 @@ import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import * as path from 'path';
 import { ScrabbleSolver } from '../scrabble-solver';
+import { ValidationService } from '../validation/validation-service';
+import { ValidationError } from '../errors/validation-error';
 
 describe('Scrabble Word Builder API', () => {
   let app: Express;
@@ -20,15 +22,12 @@ describe('Scrabble Word Builder API', () => {
     // POST /find-best endpoint
     app.post('/find-best', (req: Request, res: Response, next: NextFunction) => {
       try {
-        const { rack, word } = req.body;
-
-        if (!rack || typeof rack !== 'string') {
-          return res.status(400).json({ error: 'Rack is required and must be a string' });
+        const validation = ValidationService.validateFindBestWordInput(req.body);
+        if (!validation.success) {
+          return res.status(400).json({ error: validation.error || 'Invalid request body' });
         }
 
-        if (rack.length < 1 || rack.length > 7) {
-          return res.status(400).json({ error: 'Rack must contain 1-7 letters' });
-        }
+        const { rack, word } = validation.data;
 
         const result = solver.findBestWord(rack, word || '');
 
@@ -50,6 +49,11 @@ describe('Scrabble Word Builder API', () => {
     // Error handling middleware
     app.use((error: Error, req: Request, res: Response, next: NextFunction) => {
       console.error('Error:', error);
+
+      if (error instanceof ValidationError) {
+        return res.status(error.statusCode).json({ error: error.message });
+      }
+
       res.status(500).json({ error: error.message || 'Internal server error' });
     });
   });
@@ -89,7 +93,7 @@ describe('Scrabble Word Builder API', () => {
           .post('/find-best')
           .send({ rack: 'AIDOORZ', word: 'QUIZ' });
 
-        expect(response.status).toBe(500);
+        expect(response.status).toBe(400);
         expect(response.body).toHaveProperty('error');
         expect(response.body.error).toContain('Invalid input');
         expect(response.body.error).toContain('total count');
@@ -106,7 +110,7 @@ describe('Scrabble Word Builder API', () => {
           .post('/find-best')
           .send({ rack: 'AADORZ', word: 'QUIZ' });
 
-        expect(response.status).toBe(500);
+        expect(response.status).toBe(400);
         expect(response.body.error).toContain(`Letter 'Z'`);
         expect(response.body.error).toContain('exceeds available tiles');
       } finally {
@@ -121,7 +125,7 @@ describe('Scrabble Word Builder API', () => {
           .post('/find-best')
           .send({ rack: 'AIDOORZ', word: 'QUIZ' });
 
-        expect(response.status).toBe(500);
+        expect(response.status).toBe(400);
         expect(response.body.error).toContain('total count');
       } finally {
         consoleSpy.mockRestore();
@@ -151,6 +155,16 @@ describe('Scrabble Word Builder API', () => {
   });
 
   describe('Additional API validation tests', () => {
+    it('POST /find-best should normalize lowercase and surrounding whitespace', async () => {
+      const response = await request(app)
+        .post('/find-best')
+        .send({ rack: '  about  ', word: '   ' });
+
+      expect(response.status).toBe(200);
+      expect(response.body).toHaveProperty('word', 'ABOUT');
+      expect(response.body).toHaveProperty('score', 7);
+    });
+
     it('POST /find-best should reject empty rack', async () => {
       const response = await request(app)
         .post('/find-best')

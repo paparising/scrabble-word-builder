@@ -1,4 +1,5 @@
 import * as fs from 'fs';
+import { ValidationService } from './validation/validation-service';
 
 interface LetterData {
   [letter: string]: {
@@ -192,23 +193,6 @@ export class ScrabbleSolver {
   }
 
   /**
-   * Validate combined rack + board word doesn't exceed tile limits
-   */
-  private validateCombinedLetters(rack: string, boardWord: string): void {
-    if (!boardWord) return;
-    
-    const combinedLetters = this.countLetters(rack + boardWord);
-    for (const [letter, count] of Object.entries(combinedLetters)) {
-      const maxTiles = this.letterData[letter]?.tiles || 0;
-      if (count > maxTiles) {
-        throw new Error(
-          `Invalid input: Letter '${letter}' total count (${count}) exceeds available tiles (${maxTiles})`
-        );
-      }
-    }
-  }
-
-  /**
    * Validate if a combination is a valid word
    */
   private isValidDictionaryWord(
@@ -240,16 +224,11 @@ export class ScrabbleSolver {
     rack: string,
     boardWord: string = ''
   ): WordResult | null {
-    // Validate rack length
-    if (!rack || rack.length < 1 || rack.length > 7) {
-      throw new Error('Rack must contain 1-7 letters');
-    }
-
-    // Validate combined rack + board word doesn't exceed tile limits
-    this.validateCombinedLetters(rack, boardWord);
-
-    // Combine rack and board word to get available letters
-    const availableLetters = this.countLetters(rack + boardWord);
+    const availableLetters = ValidationService.buildAvailableLetters(
+      rack,
+      boardWord,
+      this.letterData
+    );
     
     let bestWord: WordResult | null = null;
     let bestScore = 0;
