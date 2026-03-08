@@ -2,6 +2,7 @@ import request from 'supertest';
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import * as path from 'path';
+import { vi } from 'vitest';
 import { ScrabbleSolver } from '../scrabble-solver';
 import { ValidationService } from '../validation/validation-service';
 import { ValidationError } from '../errors/validation-error';
