@@ -1,5 +1,5 @@
 import * as fs from 'fs';
-import { ValidationService } from './validation/validation-service';
+import { buildAvailableLetters } from './find-best';
 
 interface LetterData {
   [letter: string]: {
@@ -224,7 +224,7 @@ export class ScrabbleSolver {
     rack: string,
     boardWord: string = ''
   ): WordResult | null {
-    const availableLetters = ValidationService.buildAvailableLetters(
+    const availableLetters = buildAvailableLetters(
       rack,
       boardWord,
       this.letterData

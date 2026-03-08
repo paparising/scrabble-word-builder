@@ -1,4 +1,42 @@
 import { z } from 'zod';
+import { ValidationError } from './errors/validation-error';
+
+interface LetterInfo {
+  score: number;
+  tiles: number;
+}
+
+export type LetterDataMap = Record<string, LetterInfo>;
+
+function countLetters(text: string): Record<string, number> {
+  const counts: Record<string, number> = {};
+  for (const letter of text.toUpperCase()) {
+    counts[letter] = (counts[letter] || 0) + 1;
+  }
+  return counts;
+}
+
+export function buildAvailableLetters(
+  rack: string,
+  boardWord: string,
+  letterData: LetterDataMap
+): Record<string, number> {
+  if (!boardWord) {
+    return countLetters(rack);
+  }
+
+  const combinedLetters = countLetters(rack + boardWord);
+  for (const [letter, count] of Object.entries(combinedLetters)) {
+    const maxTiles = letterData[letter]?.tiles || 0;
+    if (count > maxTiles) {
+      throw new ValidationError(
+        `Invalid input: Letter '${letter}' total count (${count}) exceeds available tiles (${maxTiles})`
+      );
+    }
+  }
+
+  return combinedLetters;
+}
 
 export interface FindBestWordInput {
   rack: string;

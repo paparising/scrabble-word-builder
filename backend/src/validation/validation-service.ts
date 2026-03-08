@@ -1,12 +1,5 @@
-import { FindBestWordInput, findBestWordInputSchema } from './find-best';
+import { FindBestWordInput, LetterDataMap, findBestWordInputSchema } from '../find-best';
 import { ValidationError } from '../errors/validation-error';
-
-interface LetterInfo {
-  score: number;
-  tiles: number;
-}
-
-type LetterDataMap = Record<string, LetterInfo>;
 
 export interface ValidationResult<T> {
   success: true;
@@ -47,15 +40,6 @@ export class ValidationService {
         );
       }
     }
-  }
-
-  public static buildAvailableLetters(
-    rack: string,
-    boardWord: string,
-    letterData: LetterDataMap
-  ): Record<string, number> {
-    ValidationService.validateCombinedLetters(rack, boardWord, letterData);
-    return ValidationService.countLetters(rack + boardWord);
   }
 
   public static validateFindBestWordInput(payload: unknown): ValidationResponse<FindBestWordInput> {

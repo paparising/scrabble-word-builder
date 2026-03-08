@@ -21,7 +21,7 @@ scrabble-word-builder/
 |     `- ci.yml
 |- backend/
 |  |- dist/
-|  |- esbuild.config.js
+|  |- jest.config.js
 |  |- package.json
 |  |- src/
 |  |  |- __tests__/
@@ -38,7 +38,6 @@ scrabble-word-builder/
 |  |  |  |  `- validation-service.test.ts
 |  |  |  |- find-best.ts
 |  |  |  `- validation-service.ts
-|  |- vitest.config.mts
 |  `- tsconfig.json
 |- data/
 |  |- dictionary.txt
@@ -163,7 +162,7 @@ Backend tests:
 
 ```bash
 cd backend
-npm test
+npm test -- --runInBand
 ```
 
 Current backend result: `43/43` tests passing across 5 suites.

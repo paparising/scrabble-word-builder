@@ -40,21 +40,4 @@ describe('ValidationService helper methods', () => {
       }).toThrow(/Letter 'Z' total count \(2\) exceeds available tiles \(1\)/);
     });
   });
-
-  describe('buildAvailableLetters', () => {
-    it('returns combined letter counts when input is valid', () => {
-      const result = ValidationService.buildAvailableLetters('AB', 'A', letterData);
-
-      expect(result).toEqual({
-        A: 2,
-        B: 1,
-      });
-    });
-
-    it('propagates ValidationError on invalid combined letters', () => {
-      expect(() => {
-        ValidationService.buildAvailableLetters('AZ', 'Z', letterData);
-      }).toThrow(ValidationError);
-    });
-  });
 });

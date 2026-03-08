@@ -1,5 +1,5 @@
-import { ValidationError } from '../../errors/validation-error';
-import { buildAvailableLetters, findBestWordInputSchema } from '../../find-best';
+import { ValidationError } from '../errors/validation-error';
+import { buildAvailableLetters, findBestWordInputSchema } from '../find-best';
 
 const letterData = {
   A: { score: 1, tiles: 9 },
