@@ -133,4 +133,28 @@ describe('ScrabbleSolver', () => {
       fs.rmSync(tempDir, { recursive: true, force: true });
     });
   });
+
+  describe('Dictionary mode and cache behavior', () => {
+    it('returns the same best word in memory and streaming dictionary modes', () => {
+      const dictionaryPath = path.join(__dirname, '../../../data/dictionary.txt');
+      const letterDataPath = path.join(__dirname, '../../../data/letter_data.json');
+
+      const memorySolver = new ScrabbleSolver(dictionaryPath, letterDataPath, Number.MAX_SAFE_INTEGER);
+      const streamingSolver = new ScrabbleSolver(dictionaryPath, letterDataPath, 1);
+
+      const memoryResult = memorySolver.findBestWord('ADOORW', 'IZ');
+      const streamingResult = streamingSolver.findBestWord('ADOORW', 'IZ');
+
+      expect(memoryResult).toEqual(streamingResult);
+    });
+
+    it('returns stable results across repeated identical requests', () => {
+      const first = solver.findBestWord('ABOUT', '');
+      const second = solver.findBestWord('ABOUT', '');
+      const third = solver.findBestWord('ABOUT', '');
+
+      expect(first).toEqual(second);
+      expect(second).toEqual(third);
+    });
+  });
 });

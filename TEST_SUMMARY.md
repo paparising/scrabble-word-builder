@@ -1,12 +1,12 @@
 # Scrabble Word Builder - Test Suite Summary
 
-Date verified: 2026-03-06
+Date verified: 2026-03-08
 
 ## Overview
 
 This document summarizes the current automated test coverage.
 
-- Backend: Jest (`backend/src/__tests__`, `backend/src/validation/__tests__`)
+- Backend: Vitest (`backend/src/__tests__`, `backend/src/validation/__tests__`)
 - Frontend: Vitest (`frontend/src`)
 
 ## Current Results
@@ -15,8 +15,8 @@ This document summarizes the current automated test coverage.
 
 - Status: all passing
 - Test suites: 5
-- Tests: 43 passing, 0 failing
-- Command: `cd backend && npm test -- --runInBand`
+- Tests: 45 passing, 0 failing
+- Command: `cd backend && npm test -- --run`
 
 ### Frontend
 
@@ -33,6 +33,8 @@ This document summarizes the current automated test coverage.
   - Combined tile-limit violations
   - Case-insensitivity and edge cases
   - Deterministic tie-breaking (`ACT` vs `CAT`)
+  - In-memory dictionary mode and streaming mode parity
+  - Stable results across repeated identical requests (cache behavior)
 
 - `backend/src/__tests__/api.test.ts`
   - `POST /find-best` success cases
@@ -40,19 +42,20 @@ This document summarizes the current automated test coverage.
   - `GET /health` health check
   - Correct status handling (`200`, `400`, `404`)
 
-- `backend/src/__tests__/validation-service.test.ts`
+- `backend/src/__tests__/validation-service.api-contract.test.ts`
   - Input normalization (`trim` + uppercase)
   - Required field checks
   - Rack length checks
   - Letter-only checks for `rack` and `word`
   - Strict schema behavior (unexpected keys)
 
-- `backend/src/validation/__tests__/find-best.test.ts`
+- `backend/src/__tests__/find-best.test.ts`
   - Direct schema-level parsing and normalization checks
   - Rack and board-word validation failure assertions
+  - `buildAvailableLetters` behavior and tile-limit error propagation
 
 - `backend/src/validation/__tests__/validation-service.test.ts`
-  - Unit checks for helper methods (`countLetters`, `validateCombinedLetters`, `buildAvailableLetters`)
+  - Unit checks for helper methods (`countLetters`, `validateCombinedLetters`)
   - Validation error behavior for tile-limit overuse
 
 ## Important Contract Notes
@@ -68,7 +71,7 @@ Backend:
 
 ```bash
 cd backend
-npm test -- --runInBand
+npm test -- --run
 ```
 
 Frontend:
@@ -80,4 +83,4 @@ npm test
 
 ## Conclusion
 
-Both suites are green: backend `43/43` and frontend `4/4`.
+Both suites are green: backend `45/45` and frontend `4/4`.

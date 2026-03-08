@@ -14,13 +14,22 @@ interface WordResult {
   usedLetters: { [letter: string]: number };
 }
 
+interface CachedWordEntry {
+  word: string;
+  score: number;
+  usedLetters: { [letter: string]: number };
+}
+
 export class ScrabbleSolver {
   private static readonly DEFAULT_MAX_CACHED_DICTIONARY_BYTES = 20 * 1024 * 1024;
+  private static readonly MAX_RESULT_CACHE_ENTRIES = 1000;
 
   private dictionaryPath: string;
   private cachedDictionaryWords: string[] | null = null;
+  private cachedDictionaryEntries: CachedWordEntry[] | null = null;
   private letterData: LetterData;
   private maxCachedDictionaryBytes: number;
+  private bestWordCache: Map<string, WordResult | null> = new Map();
 
   /**
    * Load file with error handling
@@ -102,6 +111,13 @@ export class ScrabbleSolver {
         .map(word => word.trim().toUpperCase())
         .filter(word => word.length > 0);
 
+      // Precompute word score and letter counts once for fast repeated queries.
+      this.cachedDictionaryEntries = this.cachedDictionaryWords.map((word) => ({
+        word,
+        score: this.calculateScore(word),
+        usedLetters: this.countLetters(word),
+      }));
+
       console.log(
         `✓ Dictionary loaded in memory from ${this.dictionaryPath} (${this.cachedDictionaryWords.length} words)`
       );
@@ -109,6 +125,7 @@ export class ScrabbleSolver {
     }
 
     this.cachedDictionaryWords = null;
+    this.cachedDictionaryEntries = null;
     console.log(
       `✓ Dictionary configured in streaming mode from ${this.dictionaryPath} (${dictionaryStats.size} bytes)`
     );
@@ -121,6 +138,86 @@ export class ScrabbleSolver {
     return this.cachedDictionaryWords ?? this.iterateDictionaryWords();
   }
 
+  private buildAvailableLettersKey(availableLetters: { [letter: string]: number }): string {
+    return Object.entries(availableLetters)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([letter, count]) => `${letter}${count}`)
+      .join('|');
+  }
+
+  private cloneWordResult(result: WordResult): WordResult {
+    return {
+      word: result.word,
+      score: result.score,
+      usedLetters: { ...result.usedLetters },
+    };
+  }
+
+  private getLetterBudget(availableLetters: { [letter: string]: number }): number {
+    return Object.values(availableLetters).reduce((sum, count) => sum + count, 0);
+  }
+
+  private canUseLetters(
+    requiredLetters: { [letter: string]: number },
+    availableLetters: { [letter: string]: number }
+  ): boolean {
+    for (const [letter, count] of Object.entries(requiredLetters)) {
+      if ((availableLetters[letter] || 0) < count) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  private pruneResultCacheIfNeeded(): void {
+    if (this.bestWordCache.size < ScrabbleSolver.MAX_RESULT_CACHE_ENTRIES) {
+      return;
+    }
+
+    const oldestKey = this.bestWordCache.keys().next().value;
+    if (oldestKey) {
+      this.bestWordCache.delete(oldestKey);
+    }
+  }
+
+  private findBestWordFromCachedEntries(
+    availableLetters: { [letter: string]: number }
+  ): WordResult | null {
+    if (!this.cachedDictionaryEntries) {
+      return null;
+    }
+
+    const letterBudget = this.getLetterBudget(availableLetters);
+    let bestWord: WordResult | null = null;
+    let bestScore = 0;
+
+    for (const entry of this.cachedDictionaryEntries) {
+      if (entry.word.length < 2 || entry.word.length > 15 || entry.word.length > letterBudget) {
+        continue;
+      }
+
+      if (!this.canUseLetters(entry.usedLetters, availableLetters)) {
+        continue;
+      }
+
+      if (
+        !bestWord ||
+        entry.score > bestScore ||
+        (entry.score === bestScore && entry.word.localeCompare(bestWord.word) < 0)
+      ) {
+        bestScore = entry.score;
+        bestWord = {
+          word: entry.word,
+          score: entry.score,
+          usedLetters: { ...entry.usedLetters },
+        };
+      }
+    }
+
+    return bestWord;
+  }
+
   constructor(
     dictionaryPath: string,
     letterDataPath: string,
@@ -128,15 +225,15 @@ export class ScrabbleSolver {
   ) {
     // Validate dictionary file path
     this.validateFilePath(dictionaryPath, 'Dictionary');
-    this.dictionaryPath = dictionaryPath;
-    this.maxCachedDictionaryBytes = maxCachedDictionaryBytes;
-    this.initializeDictionarySource();
-
     // Load letter data
     const letterContent = this.loadFile(letterDataPath, 'Letter data');
     const letterJson = JSON.parse(letterContent);
     this.letterData = letterJson.letters;
     console.log(`✓ Letter data loaded successfully from ${letterDataPath}`);
+
+    this.dictionaryPath = dictionaryPath;
+    this.maxCachedDictionaryBytes = maxCachedDictionaryBytes;
+    this.initializeDictionarySource();
   }
 
   /**
@@ -229,6 +326,19 @@ export class ScrabbleSolver {
       boardWord,
       this.letterData
     );
+
+    const cacheKey = this.buildAvailableLettersKey(availableLetters);
+    const cachedResult = this.bestWordCache.get(cacheKey);
+    if (cachedResult !== undefined) {
+      return cachedResult ? this.cloneWordResult(cachedResult) : null;
+    }
+
+    const cachedModeResult = this.findBestWordFromCachedEntries(availableLetters);
+    if (this.cachedDictionaryEntries) {
+      this.pruneResultCacheIfNeeded();
+      this.bestWordCache.set(cacheKey, cachedModeResult ? this.cloneWordResult(cachedModeResult) : null);
+      return cachedModeResult ? this.cloneWordResult(cachedModeResult) : null;
+    }
     
     let bestWord: WordResult | null = null;
     let bestScore = 0;
@@ -255,6 +365,9 @@ export class ScrabbleSolver {
         };
       }
     }
+
+    this.pruneResultCacheIfNeeded();
+    this.bestWordCache.set(cacheKey, bestWord ? this.cloneWordResult(bestWord) : null);
 
     return bestWord;
   }

@@ -11,6 +11,7 @@ Quick start: see `QUICKSTART.md`.
 - Scrabble scoring using `data/letter_data.json`
 - Deterministic tie-break: alphabetical on equal score
 - Dictionary loading strategy: in-memory for small files, streaming-ready for larger files
+- Search optimization: precomputed in-memory dictionary entries + request result cache by available-letter signature
 
 ## Project Structure
 
@@ -20,25 +21,27 @@ scrabble-word-builder/
 |  `- workflows/
 |     `- ci.yml
 |- backend/
+|  |- .env
 |  |- dist/
-|  |- jest.config.js
+|  |- esbuild.config.js
 |  |- package.json
 |  |- src/
 |  |  |- __tests__/
 |  |  |  |- api.test.ts
+|  |  |  |- find-best.test.ts
 |  |  |  |- scrabble-solver.test.ts
-|  |  |  `- validation-service.test.ts
+|  |  |  `- validation-service.api-contract.test.ts
 |  |  |- errors/
 |  |  |  `- validation-error.ts
+|  |  |- find-best.ts
 |  |  |- index.ts
 |  |  |- scrabble-solver.ts
 |  |  |- validation/
 |  |  |  |- __tests__/
-|  |  |  |  |- find-best.test.ts
 |  |  |  |  `- validation-service.test.ts
-|  |  |  |- find-best.ts
 |  |  |  `- validation-service.ts
-|  `- tsconfig.json
+|  |- tsconfig.json
+|  `- vitest.config.mts
 |- data/
 |  |- dictionary.txt
 |  `- letter_data.json
@@ -162,10 +165,10 @@ Backend tests:
 
 ```bash
 cd backend
-npm test -- --runInBand
+npm test -- --run
 ```
 
-Current backend result: `43/43` tests passing across 5 suites.
+Current backend result: `45/45` tests passing across 5 suites.
 
 Frontend tests:
 

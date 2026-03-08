@@ -23,11 +23,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          # do not enable caching; omitting the `cache` key avoids any lookup errors
-
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install all workspace dependencies
-        run: npm install --include=dev
+        run: npm ci
 
       - name: Build backend
         working-directory: ./backend
@@ -35,15 +35,15 @@ jobs:
 
       - name: Run backend tests
         working-directory: ./backend
-        run: npm test -- --coverage --passWithNoTests
+        run: npm test -- --coverage
 
       - name: Build frontend
         working-directory: ./frontend
         run: npm run build
 
-      - name: (optional) Run frontend tests
+      - name: Run frontend tests
         working-directory: ./frontend
-        run: npm test || echo "no frontend tests"
+        run: npm test
 
       - name: Verify dictionary exists
         run: |
@@ -74,10 +74,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20.x'
-          # no caching to avoid path resolution errors
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install all workspace dependencies
-        run: npm install --include=dev
+        run: npm ci
 
       - name: TypeScript check (backend)
         working-directory: ./backend
