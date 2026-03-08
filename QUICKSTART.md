@@ -37,10 +37,10 @@ Backend:
 
 ```powershell
 cd backend
-npm test -- --runInBand
+npm test
 ```
 
-Current backend status: `33/33` tests passing.
+Current backend status: `43/43` tests passing.
 
 Frontend:
 

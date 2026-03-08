@@ -1,12 +1,12 @@
 # Scrabble Word Builder - Test Suite Summary
 
-Date verified: 2026-03-06
+Date verified: 2026-03-07
 
 ## Overview
 
 This document summarizes the current automated test coverage.
 
-- Backend: Jest (`backend/src/__tests__`, `backend/src/validation/__tests__`)
+- Backend: Vitest (`backend/src/__tests__`, `backend/src/validation/__tests__`)
 - Frontend: Vitest (`frontend/src`)
 
 ## Current Results
@@ -16,7 +16,7 @@ This document summarizes the current automated test coverage.
 - Status: all passing
 - Test suites: 5
 - Tests: 43 passing, 0 failing
-- Command: `cd backend && npm test -- --runInBand`
+- Command: `cd backend && npm test`
 
 ### Frontend
 
@@ -68,7 +68,7 @@ Backend:
 
 ```bash
 cd backend
-npm test -- --runInBand
+npm test
 ```
 
 Frontend:

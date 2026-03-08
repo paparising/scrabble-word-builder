@@ -87,7 +87,7 @@ describe('Scrabble Word Builder API', () => {
 
   describe('Test Case 3: Invalid input - Overlapping tiles', () => {
     it('POST /find-best should return error for overlapping rack and board word', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       try {
         const response = await request(app)
           .post('/find-best')
@@ -104,7 +104,7 @@ describe('Scrabble Word Builder API', () => {
     });
 
     it('POST /find-best should specifically detect Z tile limit exceeded', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       try {
         const response = await request(app)
           .post('/find-best')
@@ -119,7 +119,7 @@ describe('Scrabble Word Builder API', () => {
     });
 
     it('POST /find-best should detect tile limit exceeded in AIDOORZ + QUIZ', async () => {
-      const consoleSpy = jest.spyOn(console, 'error').mockImplementation();
+      const consoleSpy = vi.spyOn(console, 'error').mockImplementation(() => undefined);
       try {
         const response = await request(app)
           .post('/find-best')
