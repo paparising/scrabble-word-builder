@@ -153,6 +153,12 @@ export class ScrabbleSolver {
     };
   }
 
+  private cacheAndReturnResult(cacheKey: string, result: WordResult | null): WordResult | null {
+    this.pruneResultCacheIfNeeded();
+    this.bestWordCache.set(cacheKey, result ? this.cloneWordResult(result) : null);
+    return result ? this.cloneWordResult(result) : null;
+  }
+
   private getLetterBudget(availableLetters: { [letter: string]: number }): number {
     return Object.values(availableLetters).reduce((sum, count) => sum + count, 0);
   }
@@ -211,6 +217,38 @@ export class ScrabbleSolver {
           word: entry.word,
           score: entry.score,
           usedLetters: { ...entry.usedLetters },
+        };
+      }
+    }
+
+    return bestWord;
+  }
+
+  private findBestWordFromDictionaryWords(
+    availableLetters: { [letter: string]: number }
+  ): WordResult | null {
+    let bestWord: WordResult | null = null;
+    let bestScore = 0;
+
+    for (const candidateWord of this.getDictionaryWords()) {
+      // Validate if candidate is a valid word
+      if (!this.isValidDictionaryWord(candidateWord, availableLetters)) {
+        continue;
+      }
+
+      // Calculate score
+      const score = this.calculateScore(candidateWord);
+
+      if (
+        !bestWord ||
+        score > bestScore ||
+        (score === bestScore && candidateWord.localeCompare(bestWord.word) < 0)
+      ) {
+        bestScore = score;
+        bestWord = {
+          word: candidateWord,
+          score,
+          usedLetters: this.countLetters(candidateWord),
         };
       }
     }
@@ -329,46 +367,14 @@ export class ScrabbleSolver {
 
     const cacheKey = this.buildAvailableLettersKey(availableLetters);
     const cachedResult = this.bestWordCache.get(cacheKey);
+    
     if (cachedResult !== undefined) {
       return cachedResult ? this.cloneWordResult(cachedResult) : null;
     }
 
-    const cachedModeResult = this.findBestWordFromCachedEntries(availableLetters);
-    if (this.cachedDictionaryEntries) {
-      this.pruneResultCacheIfNeeded();
-      this.bestWordCache.set(cacheKey, cachedModeResult ? this.cloneWordResult(cachedModeResult) : null);
-      return cachedModeResult ? this.cloneWordResult(cachedModeResult) : null;
-    }
-    
-    let bestWord: WordResult | null = null;
-    let bestScore = 0;
-
-    for (const candidateWord of this.getDictionaryWords()) {
-      // Validate if candidate is a valid word
-      if (!this.isValidDictionaryWord(candidateWord, availableLetters)) {
-        continue;
-      }
-
-      // Calculate score
-      const score = this.calculateScore(candidateWord);
-
-      if (
-        !bestWord ||
-        score > bestScore ||
-        (score === bestScore && candidateWord.localeCompare(bestWord.word) < 0)
-      ) {
-        bestScore = score;
-        bestWord = {
-          word: candidateWord,
-          score,
-          usedLetters: this.countLetters(candidateWord),
-        };
-      }
-    }
-
-    this.pruneResultCacheIfNeeded();
-    this.bestWordCache.set(cacheKey, bestWord ? this.cloneWordResult(bestWord) : null);
-
-    return bestWord;
+    const bestWord = this.cachedDictionaryEntries ? 
+      this.findBestWordFromCachedEntries(availableLetters) : 
+      this.findBestWordFromDictionaryWords(availableLetters);
+    return this.cacheAndReturnResult(cacheKey, bestWord);
   }
 }
